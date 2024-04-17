@@ -1,0 +1,42 @@
+import numpy as np
+import tensorflow as tf
+import pickle
+
+# Load the data
+train_dir = '/content/drive/MyDrive/fruits&veges train'
+test_dir = '/content/drive/MyDrive/fruits&veges test'
+
+train_datagen = tf.keras.preprocessing.image.ImageDataGenerator(rescale=1./255)
+test_datagen = tf.keras.preprocessing.image.ImageDataGenerator(rescale=1./255)
+
+train_generator = train_datagen.flow_from_directory(
+    train_dir,
+    target_size=(64, 64),
+    batch_size=32,
+    class_mode='categorical')
+
+test_generator = test_datagen.flow_from_directory(
+    test_dir,
+    target_size=(64, 64),
+    batch_size=32,
+    class_mode='categorical')
+
+# Define the model architecture
+model = tf.keras.Sequential([
+    tf.keras.layers.Flatten(input_shape=(64, 64, 3)),
+    tf.keras.layers.Dense(128, activation='relu'),
+    tf.keras.layers.Dense(64, activation='relu'),
+    tf.keras.layers.Dense(len(train_generator.class_indices), activation='softmax')
+])
+
+# Compile the model
+model.compile(optimizer='adam',
+              loss='categorical_crossentropy',
+              metrics=['accuracy'])
+
+# Train the model
+history = model.fit(train_generator, epochs=3)
+
+# Save the model as a pickle file
+with open('model.pkl', 'wb') as f:
+    pickle.dump(model, f)
